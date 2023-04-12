@@ -34,14 +34,12 @@ int main(){
 	string CData;
 	cout << "Enter data to be saved in the chunk: ";
 	cin >> CData;
-	cout << "burh";
-	cout <<  "what";
 	int numberOfChunks=0;
-	cout << "hello";
 	while(file.tellg()!=fileSize){//count the number of chunks
 		char_int chunkSize;
 		file.read(chunkSize.a,4);
 		reverseBytes(chunkSize.a,4);
+		cout << chunkSize.b << endl;
 		file.seekg((int)file.tellg()+chunkSize.b+8);
 		numberOfChunks++;
 	}
@@ -53,28 +51,34 @@ int main(){
 	ofstream ofile(filePath.substr(0,filePath.length()-4) + "E" + ".png",ios_base::binary);
 	ofile.write((char*)pngSignature,8);
 	int i=1;
-	while(file.tellg() != fileSize){
+	file.seekg(8);
+	while(file.tellg() != fileSize){//put the custom chunk and create a new file with the custom chunk
 		char_int chunkSize;
 		file.read(chunkSize.a,4);
+		reverseBytes(chunkSize.a,4);
+		int IChunkSize = chunkSize.b;
+		reverseBytes(chunkSize.a,4);
 		char chunkName[4];
 		file.read(chunkName,4);
-		char *chunkData = (char*)malloc(chunkSize.b);
-		file.read(chunkData,chunkSize.b);
+		char *chunkData = (char*)malloc(IChunkSize);
+		file.read(chunkData,IChunkSize);
 		char crc[4];
 		file.read(crc,4);
 		if(i == CChunkPos){
 			char_int CChunkSize;
 			CChunkSize.b = CData.length();
+			reverseBytes(CChunkSize.a,4);
 			ofile.write(CChunkSize.a,4);
-			ofile.write(chunkName,4);
+			ofile.write(CChunkName.c_str(),4);
 			ofile.write(CData.c_str(),CData.length());
 			ofile.write(crc,4);
 		}
 		i++;
 		ofile.write(chunkSize.a,4);
 		ofile.write(chunkName,4);
-		ofile.write(chunkData,chunkSize.b);
+		ofile.write(chunkData,IChunkSize);
 		ofile.write(crc,4);
+		free(chunkData);
 	}
 	file.close();
 	ofile.close();
@@ -83,7 +87,7 @@ int main(){
 
 
 void reverseBytes(char *a,const size_t size){
-	for(int i=0;i<size;i++){
+	for(int i=0;i<size/2;i++){
 		char tmp;
 		tmp = a[i];
 		a[i] = a[size-i-1];
