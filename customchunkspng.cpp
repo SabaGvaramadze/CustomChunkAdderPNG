@@ -23,8 +23,14 @@ void make_crc_table(void);
 unsigned long update_crc(unsigned long crc, unsigned char *buf,int len);
 unsigned long get_crc(unsigned char *buf, int len);
 
-int main(){
-	string filePath = "test.png";
+int main(int argc,char ** argv){
+	string filePath;
+	if(argc>=2)filePath = argv[1];
+	else{
+		cout << "please input ffile path: ";
+		cin >> filePath;
+
+	}
 	ifstream file(filePath,ios_base::binary | ios::ate);
 	cout << file.is_open();
 	int fileSize = file.tellg();
@@ -113,6 +119,19 @@ int main(){
 	
 }
 
+#ifdef __linux__
+void getCorrectByteOrder(char*,const size_t size){
+}
+#else
+void getCorrectByteOrder(char *a,const size_t size){
+	for(int i=0;i<size/2;i++){
+		char tmp;
+		tmp = a[i];
+		a[i] = a[size-i-1];
+		a[size-i-1] = tmp;
+	}
+}
+#endif
 
 void reverseBytes(char *a,const size_t size){
 	for(int i=0;i<size/2;i++){
